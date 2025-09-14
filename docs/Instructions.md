@@ -1,6 +1,6 @@
 # IIT-D RAG (local desktop + HPC)
 
-> Three components, two servers, one app.
+> Three components: two servers, one app.
 
 - **Chat model:** `llama.cpp` server (e.g., DeepSeek-R1 8B GGUF)  
 - **Embedding model:** `llama.cpp` embedding server (e.g., bge-m3 GGUF)  
