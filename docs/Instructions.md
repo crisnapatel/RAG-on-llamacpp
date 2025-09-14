@@ -115,7 +115,7 @@ module load compiler/gcc/11.2/openmpi/4.1.6
 # Example uses a Skylake build of llama.cpp
 /home/chemical/phd/chz218339/llama.cpp/build/bin/llama-server \
   --model $HOME/models/DeepSeek-R1-0528-Qwen3-8B-Q6_K.gguf \
-  --host 0.0.0.0 --port 5000 -ngl 999 -t ${OMP_NUM_THREADS:-8} \
+  --host 0.0.0.0 --port 5000 -ngl 999 -t 4 \
   --ctx-size 131072
 ```
 
