@@ -27,7 +27,6 @@
 
 ## Overview
 
-```mermaid
 flowchart LR
   A[Laptop] -->|HTTP :7860| D[Gradio UI (rag.py)]
   D -->|/v1/chat (localhost:5000)| B
