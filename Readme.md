@@ -15,13 +15,13 @@ Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
 ## Preview
 
 <p align="center">
-  <img src="RAG_Web_UI.png" alt="RAG Web UI (chat over your PDFs)" width="85%">
+  <img src="Files/RAG_Web_UI.png" alt="RAG Web UI (chat over your PDFs)" width="85%">
   <br/>
   <em>Gradio UI: ask questions, see sources, manage your corpus.</em>
 </p>
 
 <p align="center">
-  <img src="Chat_model.png" alt="Chat endpoint sanity-check with curl" width="85%">
+  <img src="Files/Chat_model.png" alt="Chat endpoint sanity-check with curl" width="85%">
   <br/>
   <em>Chat server smoke test via /v1/chat/completions.</em>
 </p>
