@@ -159,7 +159,7 @@ ssh user@hpc.iitd.ac.in
 # 2) Request interactive node (IceLake works well; try Skylake if needed)
 qsub -I -l select=1:ncpus=4:mpiprocs=4:ngpus=1:centos=icelake -N llama \
     -l walltime=02:00:00 -P project_name
-Note: You could simply ssh to already alloted compute node from your login node (e.g. ssh vsky001; assuming vsky001 is alloted to you)
+# **Note: You could simply ssh to already alloted compute node from your login node (e.g. ssh vsky001; assuming vsky001 is alloted to you)**
 
 # 3) Note the node IP
 hostname -I    # -> <IP_EMBED>
