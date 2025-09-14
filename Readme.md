@@ -9,4 +9,5 @@ Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
 > Full setup, HPC commands, and troubleshooting: [docs/Instructions.md](docs/Instructions.md)
 > 
 > llama is inference runner (model manager): https://github.com/ggml-org/llama.cpp
-
+>
+> Two known issues: Sometimes chat model doesn't respond. This could be the chat model I used.
