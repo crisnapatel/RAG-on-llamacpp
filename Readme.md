@@ -26,3 +26,6 @@ Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
   <br/>
   <em>Chat server smoke test via /v1/chat/completions.</em>
 </p>
+
+
+Credits: Assisted by ChatGPT and Perplexity.
