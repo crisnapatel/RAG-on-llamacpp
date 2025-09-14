@@ -75,8 +75,8 @@ pip install numpy requests tqdm pypdf pypdfium2 python-docx chardet \
 
 # B) conda env file
 # conda env create -f environment.yml -n RAG
-> Get the environment.yml file: [Files/environment.yml](docs/environment.yml)
-> Or see use requirements.txt file: [Files/requirements.txt](docs/requirements.txt)
+# Get the environment.yml file: [Files/environment.yml](docs/environment.yml)
+# Or see use requirements.txt file: [Files/requirements.txt](docs/requirements.txt)
 ```
 
 Create your working folder:
