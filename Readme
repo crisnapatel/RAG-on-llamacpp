@@ -1,1 +1,280 @@
-Local PDF RAG using llama.cpp (embeddings) + FAISS, runnable on desktop & IIT-D HPC.
+# IIT-D RAG (local desktop + HPC)
+> Three components, two servers, one app:
+* **Chat model:** llama.cpp server (e.g., DeepSeek-R1 8B GGUF)
+* **Embedding model:** llama.cpp embedding server (e.g., bge-m3 GGUF)
+* **RAG app:** `rag.py` (FAISS + BM25 + Gradio UI)
+
+---
+
+## 0) Prereqs
+
+* IIT-Delhi HPC account with interactive job access (`qsub -I`)
+* My compiled `llama.cpp` (or your own), and GGUF models in `~/models/` on HPC
+* On your **laptop/desktop**: Python 3.11 + Conda (or `pip`)
+* Ports **5000** (chat) and **5001** (embedding) free on your laptop
+
+### Models (put these in `~/models` on HPC)
+
+* Chat model (pick a quant you like):
+  [https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main](https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main)
+* Embeddings model (bge-m3 GGUF):
+  [https://huggingface.co/lm-kit/bge-m3-gguf/tree/main](https://huggingface.co/lm-kit/bge-m3-gguf/tree/main)
+
+> Use a GGUF quant your GPU/CPU can handle (Q4\_K / Q5\_K / Q6\_K / Q8\_0). Try a few.
+
+---
+
+## 1) Conda env on your laptop
+
+```bash
+# one-time
+conda create -n RAG python=3.11 -y
+conda activate RAG
+
+# install deps (either way works)
+# A) pip
+pip install numpy requests tqdm pypdf pypdfium2 python-docx chardet faiss-cpu rank-bm25 gradio orjson
+
+# B) or replicate from environment.yml (download the file from current repo)
+# conda env create -f environment.yml -n RAG
+```
+
+---
+
+## 2) Files on your laptop
+
+```bash
+mkdir ~/RAG_Files
+mkdir ~/RAG_Files/Papers
+cd ~/RAG_Files
+
+# create rag.py here (paste the file contents you already have)
+# or get the file from the repo and place in ~/RAG_Files dir.
+```
+
+Place a couple of PDFs under `~/RAG_Files/Papers/` to test.
+
+---
+
+## 3) Runbook (multiple terminals)
+
+All terminal commands below run **on your local laptop**, except when we SSH into the HPC. Keep the tunneling terminals open while you use the web app.
+
+### Terminal 1 — Start the **chat** server on HPC
+
+```bash
+# 1) Login to HPC
+ssh user@hpc.iitd.ac.in
+
+# 2) Request an interactive node (Skylake GPUs in my setup)
+qsub -I -l select=1:ncpus=4:mpiprocs=4:ngpus=1:centos=skylake -N llama -l walltime=02:00:00 -P project_name
+
+# 3) On the compute node, note its IP:
+hostname -I        # call this IP_CHAT
+
+# 4) Modules / env (adjust as needed; these are for IIT Delhi PADUM)
+export CUDA_VISIBLE_DEVICES=0   # set to your assigned GPU (0 or 1)
+export LD_LIBRARY_PATH=$PWD:${LD_LIBRARY_PATH}
+module load compiler/cuda/12.3/compilervars
+module load compiler/gcc/11.2/openmpi/4.1.6
+
+# 5) Start the chat server (adjust path/model)
+# Path is *my* skylake llama.cpp build; use your own if different
+/home/chemical/phd/chz218339/llama.cpp/build/bin/./llama-server --model $HOME/models/DeepSeek-R1-0528-Qwen3-8B-Q6_K.gguf --host 0.0.0.0 --port 5000 -ngl 999 -t ${OMP_NUM_THREADS:-8} --ctx-size 131072
+```
+
+> If your `llama-server` binary is compiled for *Skylake* only, keep chat on Skylake nodes. If you have an IceLake-compatible build, use IceLake.
+
+---
+
+### Terminal 2 — Tunnel **chat** to your laptop
+
+```bash
+ssh -L 5000:IP_CHAT:5000 user@hpc.iitd.ac.in
+```
+
+Keep this terminal open. Open localhost:5000 in your browser to see the llama.cpp web UI.
+Test the chat server locally:
+
+```bash
+curl -s http://127.0.0.1:5000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+        "model":"deepseek-r1",
+        "messages":[
+          {"role":"system","content":"Be concise."},
+          {"role":"user","content":"Say hello in one sentence."}
+        ],
+        "max_tokens":64,
+        "add_generation_prompt":true
+      }' | jq .
+```
+
+---
+
+### Terminal 3 — Start the **embedding** server on HPC
+
+```bash
+# 1) Login again
+ssh user@hpc.iitd.ac.in
+
+# 2) Request an interactive node
+# I’ve run embeddings on IceLake successfully. If it errors, try Skylake.
+qsub -I -l select=1:ncpus=4:mpiprocs=4:ngpus=1:centos=icelake -N llama -l walltime=02:00:00 -P project_name
+
+# 3) On the compute node, note its IP:
+hostname -I        # call this IP_EMBED
+
+# 4) Modules / env (same as chat)
+export CUDA_VISIBLE_DEVICES=0
+export LD_LIBRARY_PATH=$PWD:${LD_LIBRARY_PATH}
+module load compiler/cuda/12.3/compilervars
+module load compiler/gcc/11.2/openmpi/4.1.6
+```
+
+Start the embedding server. Two presets that worked for me:
+
+**Preset A (my “good balance” on desktop/HPC):**
+
+```bash
+/home/chemical/phd/chz218339/llama.cpp/build/bin/./llama-server -m $HOME/models/bge-m3-Q8_0.gguf --embedding -t 8 -ngl 999 --ctx-size 8192 --parallel 4 --batch-size 8192 --ubatch-size 16384 --mlock --host 0.0.0.0 --port 5001
+```
+
+**Preset B (tighter context, more parallel):**
+
+```bash
+/home/chemical/phd/chz218339/llama.cpp/build/bin/./llama-server -m $HOME/models/bge-m3-Q8_0.gguf --embedding -t 8 -ngl 999 --ctx-size 2048 --parallel 16 --batch-size 4096 --ubatch-size 2048 --cont-batching --mlock --host 0.0.0.0 --port 5001
+```
+
+If you see `input is larger than the max context size`, reduce packing on the client (env vars below) or use **Preset A**.
+
+---
+
+### Terminal 4 — Tunnel **embedding** to your laptop
+
+```bash
+ssh -L 5001:IP_EMBED:5001 user@hpc.iitd.ac.in
+```
+
+Leave it running. Go to localhost:5001 in your browser; you’ll see a UI but can’t chat since it’s an embedding model.
+Test the embedding server locally:
+
+```bash
+curl http://127.0.0.1:5001/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"input":["adsorption energy of toluene on CNT"],"model":"bge-m3"}' | jq .
+```
+
+---
+
+### (Optional) Terminal 5 — Single tunnel for **both** servers
+
+You can replace Terminal 2 **and** 4 with one tunnel:
+
+```bash
+ssh -L 5000:IP_CHAT:5000 -L 5001:IP_EMBED:5001 user@hpc.iitd.ac.in
+```
+
+Keep it open.
+
+---
+
+### Terminal 6 — Run RAG from your laptop
+
+```bash
+conda activate RAG
+cd ~/RAG_Files
+```
+
+**Env setup (correct names):**
+
+```bash
+# where the PDFs live (avoid quoting ~ to allow expansion)
+export PDF_DIR=$HOME/RAG_Files/Papers
+export RAG_STORE=$HOME/RAG_Files/rag_store
+
+# OpenAI-compatible server URLs (these are your local tunnels)
+export CHAT_URL=http://127.0.0.1:5000
+export EMBED_URL=http://127.0.0.1:5001
+
+# Model “names” used by rag.py
+export CHAT_MODEL=deepseek-r1
+export EMBED_MODEL=bge-m3
+
+# Packer/timeout etc that worked well for me
+export PARSE_WORKERS=1
+export EMBED_MAX_ITEMS=12
+export CHARS_PER_TOKEN=3.2
+export EMBED_TIMEOUT=600
+```
+
+**Index PDFs:**
+
+```bash
+python rag.py index --dir "$PDF_DIR"
+```
+
+**Ask a question (CLI):**
+
+```bash
+python rag.py ask "What is the paper about?"
+```
+
+**Start the local UI (Gradio):**
+
+```bash
+python rag.py ui
+```
+
+Open [http://localhost:7860](http://localhost:7860) and chat. The UI lets you rebuild/append the index, etc.
+
+---
+
+## 4) Notes, Tips, Troubleshooting
+
+* **Model paths**: Replace my executable path
+  `/home/chemical/phd/chz218339/llama.cpp/build/bin/./llama-server`
+  with your own if you compiled `llama.cpp` elsewhere.
+* **Node type**: If your `llama-server` build is Skylake-only, use Skylake nodes.
+* **Tunnels**: Keep the SSH tunnels open the whole time. All RAG traffic stays inside your laptop, login node, compute node.
+* **Throughput vs stability** (embeddings):
+
+  * If the server logs say *“exceed context size / n\_ubatch”*, lower client packing:
+
+    ```bash
+    export EMBED_MAX_ITEMS=8
+    export CHARS_PER_TOKEN=3.5
+    ```
+  * Or reduce server `--parallel`, increase `--ctx-size`, increase `--ubatch-size` (see Preset A).
+* **PDFs over SSHFS are slow**: Prefer local disk on your laptop for parsing; or copy PDFs to `$SCRATCH` and run `rag.py index` on HPC (but then you’d also need the chat model tunneled back if you want to use the UI locally).
+* **Don’t quote `~`**: use `$HOME/...` or unquoted `~/...` so the shell expands it.
+
+---
+
+## 5) Minimal cheat-sheet
+
+```bash
+# chat server (HPC, Skylake); have necessary modules loaded
+llama-server --model ~/models/DeepSeek-R1-0528-Qwen3-8B-Q6_K.gguf --host 0.0.0.0 --port 5000 -ngl 999 -t 8 --ctx-size 131072
+
+# embed server (HPC); have necessary modules loaded
+llama-server -m ~/models/bge-m3-Q8_0.gguf --embedding --host 0.0.0.0 --port 5001 -t 8 -ngl 999 --ctx-size 8192 --parallel 4 --batch-size 8192 --ubatch-size 16384
+
+# tunnels (laptop)
+ssh -L 5000:IP_CHAT:5000 -L 5001:IP_EMBED:5001 user@hpc.iitd.ac.in
+
+# RAG env (laptop)
+export PDF_DIR=$HOME/RAG_Files/Papers
+export RAG_STORE=$HOME/RAG_Files/rag_store
+export CHAT_URL=http://127.0.0.1:5000
+export EMBED_URL=http://127.0.0.1:5001
+export CHAT_MODEL=deepseek-r1
+export EMBED_MODEL=bge-m3
+export PARSE_WORKERS=1 EMBED_MAX_ITEMS=12 CHARS_PER_TOKEN=3.2 EMBED_TIMEOUT=600
+
+# index + ui (laptop)
+python rag.py index --dir "$PDF_DIR"
+python rag.py ui
+```
+
+---
