@@ -1,4 +1,3 @@
-````markdown
 # IIT-D RAG (local desktop + HPC)
 
 > Three components, two servers, one app.
@@ -35,7 +34,7 @@ flowchart LR
   D -->|/v1/embeddings (localhost:5001)| C
   B[HPC: llama-server (Chat)] ---|SSH tunnel :5000| A
   C[HPC: llama-server (Embeddings)] ---|SSH tunnel :5001| A
-````
+
 
 All traffic stays inside your laptop ↔ login node ↔ compute nodes via SSH tunnels.
 
