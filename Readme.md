@@ -1,5 +1,7 @@
 # RAG on llama.cpp (IIT Delhi)
 
+As researchers, reading research articles is an everyday task. Overtime, we accumulated thousands of research articles and a year later we remember reading about XYZ in some paper that exist somewhere in 'Research_Articles' directory. What if you could ask questions to a chat model and get answers with precise citations (filename, page number, figure number etc)? Wouldn't that make literature recall instant and let you focus on insight rather than search—so you can cite confidently, reproduce analyses, and pull the exact figure or paragraph you need in seconds?
+
 Chat with your **own research papers** using a local RAG pipeline.
 Back end: two `llama.cpp` servers (chat + embeddings) running on IIT-D HPC, tunneled to your laptop.  
 Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
