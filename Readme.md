@@ -1,5 +1,3 @@
-Got it. Here’s a cleaned, GitHub-optimized **README.md** you can paste in as-is. It uses GitHub callouts, a Mermaid diagram, clear anchors, and consistent fenced code blocks so everything renders crisply.
-
 ````markdown
 # IIT-D RAG (local desktop + HPC)
 
@@ -89,7 +87,7 @@ cd ~/RAG_Files
 
 ---
 
-## Runbook (multiple terminals)
+## multiple terminals
 
 > All commands are on **your laptop** unless the step says SSH to HPC.
 > Keep tunnel terminals open while using the app.
@@ -229,7 +227,7 @@ conda activate RAG
 cd ~/RAG_Files
 ```
 
-**Environment (correct names):**
+**Environment vars:**
 
 ```bash
 # Where the PDFs live
@@ -269,14 +267,13 @@ python rag.py ask "What is the paper about?"
 python rag.py ui
 ```
 
-Open [http://localhost:7860](http://localhost:7860) and chat. The UI can rebuild/append the index.
+Open [http://localhost:7860](http://localhost:7860) and chat. The UI can rebuild/append the index. Read/edit rag.py file for more options.
 
 ---
 
 ## Notes, Tips, Troubleshooting
 
-* **Paths:** Replace `/home/chemical/phd/chz218339/llama.cpp/...` with your own build path.
-* **Node type:** Use a binary built for the target micro-arch (Skylake vs IceLake).
+* **Paths:** Replace `/home/chemical/phd/chz218339/llama.cpp/...` with your own build path or just use my skylake llama build (currently all HPC users should have read access).
 * **Tunnels:** Keep SSH tunnels open the entire time.
 * **Throughput vs stability (embeddings):**
 
@@ -319,9 +316,4 @@ export PARSE_WORKERS=1 EMBED_MAX_ITEMS=12 CHARS_PER_TOKEN=3.2 EMBED_TIMEOUT=600
 # Index + UI (laptop)
 python rag.py index --dir "$PDF_DIR"
 python rag.py ui
-```
-
-```
-
-If you want, I can also add badges (Python version, license) or a tiny “Quickstart” at the top.
 ```
