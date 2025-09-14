@@ -28,14 +28,13 @@
 
 ## Overview
 
-```mermaid
 flowchart LR
   A[Laptop] -->|HTTP :7860| D[Gradio UI (rag.py)]
   D -->|/v1/chat (localhost:5000)| B
   D -->|/v1/embeddings (localhost:5001)| C
   B[HPC: llama-server (Chat)] ---|SSH tunnel :5000| A
   C[HPC: llama-server (Embeddings)] ---|SSH tunnel :5001| A
-````
+
 
 All traffic stays inside your laptop ↔ login node ↔ compute nodes via SSH tunnels.
 
