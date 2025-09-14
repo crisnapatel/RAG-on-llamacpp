@@ -11,3 +11,17 @@ Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
 > llama is inference runner (model manager): https://github.com/ggml-org/llama.cpp
 >
 > Two known issues: Sometimes chat model doesn't respond. This could be the chat model I used. Chain of thought (raw model output) not working; meaning you cannot see what chat model is thinking.
+
+## Preview
+
+<p align="center">
+  <img src="RAG_Web_UI.png" alt="RAG Web UI (chat over your PDFs)" width="85%">
+  <br/>
+  <em>Gradio UI: ask questions, see sources, manage your corpus.</em>
+</p>
+
+<p align="center">
+  <img src="Chat_model.png" alt="Chat endpoint sanity-check with curl" width="85%">
+  <br/>
+  <em>Chat server smoke test via /v1/chat/completions.</em>
+</p>
