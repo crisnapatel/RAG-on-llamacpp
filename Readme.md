@@ -13,13 +13,14 @@ Front end: `rag.py` (FAISS + BM25) with a Gradio UI.
 > Two known issues: Sometimes chat model doesn't respond. This could be the chat model I used. Chain of thought (raw model output) not working; meaning you cannot see what chat model is thinking.
 
 ## Preview
-
+### RAG web UI running at localhost:7860
 <p align="center">
   <img src="Files/RAG_Web_UI.png" alt="RAG Web UI (chat over your PDFs)" width="85%">
   <br/>
   <em>Gradio UI: ask questions, see sources, manage your corpus.</em>
 </p>
 
+### Chat model runninng at localhost:5000
 <p align="center">
   <img src="Files/Chat_model.png" alt="Chat endpoint sanity-check with curl" width="85%">
   <br/>
