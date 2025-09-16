@@ -1,3 +1,4 @@
+```
 # ===============================
 # Open-WebUI + llama.cpp (HPC)
 # Chat + Embeddings on compute node
@@ -108,3 +109,5 @@ open-webui serve --port 8080
 
 * **CUDA OOM** (30B chat):
   → Lower `--batch-size/--ubatch-size`, then reduce `--ctx-size`; keep KV on CPU if needed.
+
+```
