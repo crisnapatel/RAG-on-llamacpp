@@ -42,11 +42,14 @@ All traffic stays inside your laptop ↔ login node ↔ compute nodes via SSH tu
 ## Prereqs
 
 * IIT-Delhi HPC account with interactive job access (`qsub -I`)
-* A compiled **`llama.cpp`** on HPC and your **GGUF** models under `~/models/`
+* A compiled **`llama.cpp`** on HPC and your **GGUF** models under `~/llama.cpp/models/`
 * On your **laptop/desktop**: **Python 3.11** with **Conda** (or `pip`)
 * Laptop ports **5000** (chat) and **5001** (embeddings) free
 
 ### Models (put these in `~/models` on HPC)
+HPC users at IIT Delhi have read access to models and llama binaries in my HPC dirs. You could read them as:
+All models are here: ~/llama.cpp/models/
+llama binaries are here: ~/llama.cpp/build/bin/
 
 * **Chat (pick a quant):**
   [https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main](https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main)
@@ -175,7 +178,7 @@ module load compiler/gcc/11.2/openmpi/4.1.6
 
 ```bash
 /home/chemical/phd/chz218339/llama.cpp/build/bin/llama-server \
-  -m $HOME/models/bge-m3-Q8_0.gguf --embedding \
+  -m $HOME/llama.cpp/models/bge-m3-Q8_0.gguf --embedding \
   -t 8 -ngl 999 --ctx-size 8192 --parallel 4 \
   --batch-size 8192 --ubatch-size 16384 --mlock \
   --host 0.0.0.0 --port 5001
@@ -294,11 +297,11 @@ Open [http://localhost:7860](http://localhost:7860) and chat. The UI can rebuild
 
 ```bash
 # Chat server (HPC; modules loaded)
-llama-server --model ~/models/DeepSeek-R1-0528-Qwen3-8B-Q6_K.gguf \
+llama-server --model ~/llama.cpp/models/DeepSeek-R1-0528-Qwen3-8B-Q6_K.gguf \
   --host 0.0.0.0 --port 5000 -ngl 999 -t 8 --ctx-size 131072
 
 # Embedding server (HPC)
-llama-server -m ~/models/bge-m3-Q8_0.gguf --embedding \
+llama-server -m ~/llama.cpp/models/bge-m3-Q8_0.gguf --embedding \
   --host 0.0.0.0 --port 5001 -t 8 -ngl 999 --ctx-size 8192 \
   --parallel 4 --batch-size 8192 --ubatch-size 16384
 
