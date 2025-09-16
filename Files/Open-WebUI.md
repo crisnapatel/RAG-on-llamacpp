@@ -86,7 +86,7 @@ open-webui serve --port 8080
 #   Embedding E
 
 
-### Troubleshooting (short + surgical)
+### Errors with embedding model
 
 * **Dim mismatch**: `InvalidArgumentError: Collection expecting embedding with dimension of 1024, got 768/384`
   → Admin → Documents: set embedding engine/model to your 1024-d server (`embed-bge-m3`).
