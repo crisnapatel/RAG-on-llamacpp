@@ -1,0 +1,16 @@
+```bash
+# Update the package list
+sudo apt update
+
+# ubuntu machine; install dependencies
+sudo apt update && sudo apt install -y git build-essential cmake
+
+git clone --depth 1 https://github.com/ggml-org/llama.cpp ~/llama.cpp
+cd ~/llama.cpp
+mkdir -p build
+cd build
+cmake .. -DGGML_CUDA=on
+cmake --build . -j"$(nproc)"
+
+# Download model file (gguf extension) and place in ~/llama.cpp/models
+# You can find list of models available in gguf format at: https://docs.unsloth.ai/get-started/all-our-models#deepseek-models
