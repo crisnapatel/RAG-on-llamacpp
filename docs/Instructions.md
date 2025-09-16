@@ -48,8 +48,8 @@ All traffic stays inside your laptop ↔ login node ↔ compute nodes via SSH tu
 
 ### Models (put these in `~/models` on HPC)
 HPC users at IIT Delhi have read access to models and llama binaries in my HPC dirs. You could read them as:
-* All models are here: ~/llama.cpp/models/
-* llama binaries are here: ~/llama.cpp/build/bin/
+* All models are here: /home/chemical/phd/chz218339/llama.cpp/models/
+* llama binaries are here: /home/chemical/phd/chz218339/llama.cpp/build/bin/
 
 * **Chat (pick a quant):**
   [https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main](https://huggingface.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF/tree/main)
